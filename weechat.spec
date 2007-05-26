@@ -51,7 +51,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/%{name}/plugins/*
 
 %changelog
-* Sat May 26 MSD 2007 Paul P. Komkoff Jr <i@stingr.net> - 0.2.4-3
+* Sat May 26 2007 Paul P. Komkoff Jr <i@stingr.net> - 0.2.4-3
 - bump release. Stupid cvs-import.sh!
 
 * Mon Apr  9 2007 Paul P. Komkoff Jr <i@stingr.net> - 0.2.4-2
