@@ -1,7 +1,7 @@
 Name:      weechat
 Summary:   Portable, fast, light and extensible IRC client
 Version:   0.2.4
-Release:   2%{?dist}
+Release:   3%{?dist}
 Source:    http://weechat.flashtux.org/download/%{name}-%{version}.tar.bz2
 URL:       http://weechat.flashtux.org
 Group:     Applications/Communications
@@ -51,6 +51,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/%{name}/plugins/*
 
 %changelog
+* Sat May 26 MSD 2007 Paul P. Komkoff Jr <i@stingr.net> - 0.2.4-3
+- bump release. Stupid cvs-import.sh!
+
 * Mon Apr  9 2007 Paul P. Komkoff Jr <i@stingr.net> - 0.2.4-2
 - preparing for Fedora
 
