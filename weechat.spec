@@ -1,9 +1,9 @@
 Name:      weechat
 Summary:   Portable, fast, light and extensible IRC client
-Version:   0.2.6
-Release:   3%{?dist}
+Version:   0.2.6.1
+Release:   1%{?dist}
 Source:    http://weechat.flashtux.org/download/%{name}-%{version}.tar.bz2
-Patch0:    weechat-pie-rollup.patch.bz2
+Patch0:    weechat-0.2.6.1-pie-rollup.patch.bz2
 URL:       http://weechat.flashtux.org
 Group:     Applications/Communications
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
@@ -19,7 +19,7 @@ It is customizable and extensible with scripts.
 
 %prep
 %setup -q
-%patch -p1
+%patch0 -p1
 
 %build
 %configure \
@@ -55,6 +55,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/%{name}/plugins/*
 
 %changelog
+* Thu Mar 19 2009 Paul P. Komkoff Jr <i@stingr.net> - 0.2.6.1-1
+- fix bz#490709
+
+* Wed Feb 25 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.6-7
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_11_Mass_Rebuild
+
+* Sun Nov 30 2008 Ignacio Vazquez-Abrams <ivazqueznet+rpm@gmail.com> - 0.2.6-6
+- Rebuild for Python 2.6
+
+* Sun Sep 21 2008 Ville Skyttä <ville.skytta at iki.fi> - 0.2.6-5
+- Fix Patch0:/%%patch mismatch.
+
+* Fri Jun 27 2008 Paul P. Komkoff Jr <i@stingr.net> - 0.2.6-4
+- rebuild because of ssl/tls deps
+
 * Sun Feb 24 2008 Paul P. Komkoff Jr <i@stingr.net> - 0.2.6-3
 - make weechat-curses a PIE
 - remove irrelevant INSTALL from docs
