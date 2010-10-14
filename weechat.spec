@@ -1,7 +1,7 @@
 Name:      weechat
 Summary:   Portable, fast, light and extensible IRC client
 Version:   0.3.3
-Release:   2%{?dist}
+Release:   2%{?dist}.1
 Source:    http://weechat.org/files/src/%{name}-%{version}.tar.bz2
 Patch0:    weechat-cmake-paths.patch
 Patch1:    weechat-cmake-pie.patch
@@ -72,6 +72,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Thu Oct 14 2010 Jesse Keating <jkeating@redhat.com> - 0.3.3-2.1
+- Rebuild for gcc bug 634757
+
 * Sat Aug 28 2010 Paul P. Komkoff Jr <i@stingr.net> - 0.3.3-2
 - fixed cmake config to accept python27
 
