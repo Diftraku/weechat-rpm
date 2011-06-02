@@ -1,18 +1,64 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index ae867ee..6cdc9e2 100644
+index 0e04ebc..c60105b 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -52,7 +52,7 @@ OPTION(DISABLE_GCRYPT        "Disable libgcrypt support")
- OPTION(DISABLE_GNUTLS        "Disable SSLv3/TLS connection support")
- OPTION(DISABLE_LARGEFILE     "Disable Large File Support")
- OPTION(DISABLE_ALIAS         "Disable Alias plugin")
--OPTION(DISABLE_ASPELL        "Disable Aspell plugin")
-+OPTION(DISABLE_SPELL         "Disable Spell plugin")
- OPTION(DISABLE_CHARSET       "Disable Charset plugin")
- OPTION(ENABLE_DEMO           "Enable Demo plugin")
- OPTION(DISABLE_FIFO          "Disable FIFO plugin")
+@@ -37,27 +37,13 @@ SET(VERSION_PATCH "5")
+ SET(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+ SET(LICENSE "GPL3")
+ SET(PKG_STRING "${PROJECT_NAME} ${VERSION}")
+-STRING(REPLACE "\";\"" "\ " PKG_STRING ${PKG_STRING})
+-
+-IF(DEFINED LIBDIR)
+-  SET(LIBDIR ${LIBDIR}/${PROJECT_NAME})
+-ELSE(DEFINED LIBDIR)
+-  SET(LIBDIR ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME})
+-ENDIF(DEFINED LIBDIR)
+ 
+-IF(NOT DEFINED SHAREDIR)
+-  SET(SHAREDIR ${CMAKE_INSTALL_PREFIX}/share)
+-ENDIF(NOT DEFINED SHAREDIR)
++SET(LIBDIR ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/${PROJECT_NAME})
++SET(SHAREDIR ${CMAKE_INSTALL_PREFIX}/share)
++SET(LOCALEDIR ${CMAKE_INSTALL_PREFIX}/share/locale)
++SET(INCLUDEDIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
+ 
+-IF(NOT DEFINED LOCALEDIR)
+-  SET(LOCALEDIR ${SHAREDIR}/locale)
+-ENDIF(NOT DEFINED LOCALEDIR)
+-
+-IF(DEFINED INCLUDEDIR)
+-  SET(INCLUDEDIR ${INCLUDEDIR}/${PROJECT_NAME})
+-ELSE(DEFINED INCLUDEDIR)
+-  SET(INCLUDEDIR ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
+-ENDIF(DEFINED INCLUDEDIR)
++STRING(REPLACE "\";\"" "\ " PKG_STRING ${PKG_STRING})
+ 
+ OPTION(ENABLE_NCURSES   "Enable Ncurses interface"         ON)
+ OPTION(ENABLE_GTK       "Enable GTK interface"             OFF)
+@@ -66,7 +52,7 @@ OPTION(ENABLE_GCRYPT    "Enable libgcrypt support"         ON)
+ OPTION(ENABLE_GNUTLS    "Enable SSLv3/TLS support"         ON)
+ OPTION(ENABLE_LARGEFILE "Enable Large File Support"        ON)
+ OPTION(ENABLE_ALIAS     "Enable Alias plugin"              ON)
+-OPTION(ENABLE_ASPELL    "Enable Aspell plugin"             ON)
++OPTION(ENABLE_SPELL     "Enable Spell plugin"              ON)
+ OPTION(ENABLE_CHARSET   "Enable Charset plugin"            ON)
+ OPTION(ENABLE_DEMO      "Enable Demo plugin"               OFF)
+ OPTION(ENABLE_FIFO      "Enable FIFO plugin"               ON)
+@@ -114,10 +100,10 @@ ADD_CUSTOM_TARGET(dist
+ SET(PACKAGE "${PROJECT_NAME}")
+ SET(prefix "${CMAKE_INSTALL_PREFIX}")
+ SET(exec_prefix "\${prefix}")
+-SET(libdir "\${exec_prefix}/lib")
++SET(libdir "\${exec_prefix}/lib${LIB_SUFFIX}")
+ SET(includedir "\${prefix}/include")
+ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/weechat.pc.in ${CMAKE_CURRENT_BINARY_DIR}/weechat.pc @ONLY)
+-INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/weechat.pc DESTINATION ${LIBDIR}/../pkgconfig)
++INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/weechat.pc DESTINATION ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX}/pkgconfig)
+ 
+ # packages
+ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Fast, light and extensible chat client")
 diff --git a/Makefile.am b/Makefile.am
-index cc5605d..ceca668 100644
+index fdda264..f7a5216 100644
 --- a/Makefile.am
 +++ b/Makefile.am
 @@ -31,6 +31,7 @@ EXTRA_DIST = CMakeLists.txt \
@@ -74,19 +120,19 @@ index 0000000..9c13c48
 +
 +endif (ENCHANT_INCLUDE_DIR AND ENCHANT_LIBRARIES)
 diff --git a/configure.in b/configure.in
-index 3c85871..e37506c 100644
+index 2454c0f..ceb62c8 100644
 --- a/configure.in
 +++ b/configure.in
-@@ -107,7 +107,7 @@ AH_VERBATIM([HAVE_GCRYPT], [#undef HAVE_GCRYPT])
- AH_VERBATIM([HAVE_GNUTLS], [#undef HAVE_GNUTLS])
- AH_VERBATIM([HAVE_FLOCK], [#undef HAVE_FLOCK])
- AH_VERBATIM([PLUGIN_ALIAS], [#undef PLUGIN_ALIAS])
--AH_VERBATIM([PLUGIN_ASPELL], [#undef PLUGIN_ASPELL])
-+AH_VERBATIM([PLUGIN_SPELL],  [#undef PLUGIN_SPELL])
- AH_VERBATIM([PLUGIN_CHARSET], [#undef PLUGIN_CHARSET])
- AH_VERBATIM([PLUGIN_DEMO], [#undef PLUGIN_DEMO])
- AH_VERBATIM([PLUGIN_FIFO], [#undef PLUGIN_FIFO])
-@@ -132,7 +132,7 @@ AC_ARG_ENABLE(gcrypt,       [  --disable-gcrypt        turn off gcrypt support (
+@@ -107,7 +107,7 @@ AH_VERBATIM([HAVE_GCRYPT],      [#undef HAVE_GCRYPT])
+ AH_VERBATIM([HAVE_GNUTLS],      [#undef HAVE_GNUTLS])
+ AH_VERBATIM([HAVE_FLOCK],       [#undef HAVE_FLOCK])
+ AH_VERBATIM([PLUGIN_ALIAS],     [#undef PLUGIN_ALIAS])
+-AH_VERBATIM([PLUGIN_ASPELL],    [#undef PLUGIN_ASPELL])
++AH_VERBATIM([PLUGIN_SPELL],     [#undef PLUGIN_SPELL])
+ AH_VERBATIM([PLUGIN_CHARSET],   [#undef PLUGIN_CHARSET])
+ AH_VERBATIM([PLUGIN_DEMO],      [#undef PLUGIN_DEMO])
+ AH_VERBATIM([PLUGIN_FIFO],      [#undef PLUGIN_FIFO])
+@@ -133,7 +133,7 @@ AC_ARG_ENABLE(gcrypt,       [  --disable-gcrypt        turn off gcrypt support (
  AC_ARG_ENABLE(gnutls,       [  --disable-gnutls        turn off gnutls support (default=compiled if found)],enable_gnutls=$enableval,enable_gnutls=yes)
  AC_ARG_ENABLE(largefile,    [  --disable-largefile     turn off Large File Support (default=on)],enable_largefile=$enableval,enable_largefile=yes)
  AC_ARG_ENABLE(alias,        [  --disable-alias         turn off Alias plugin (default=compiled)],enable_alias=$enableval,enable_alias=yes)
@@ -95,7 +141,7 @@ index 3c85871..e37506c 100644
  AC_ARG_ENABLE(charset,      [  --disable-charset       turn off Charset plugin (default=compiled if found)],enable_charset=$enableval,enable_charset=yes)
  AC_ARG_ENABLE(demo,         [  --enable-demo           turn on Demo plugin (default=off)],enable_demo=$enableval,enable_demo=no)
  AC_ARG_ENABLE(fifo,         [  --disable-fifo          turn off Fifo plugin (default=compiled)],enable_fifo=$enableval,enable_fifo=yes)
-@@ -308,36 +308,41 @@ else
+@@ -310,36 +310,41 @@ else
      not_asked="$not_asked alias"
  fi
  
@@ -155,16 +201,16 @@ index 3c85871..e37506c 100644
  fi
  
  # --------------------------------- charset ------------------------------------
-@@ -979,7 +984,7 @@ AM_CONDITIONAL(GUI_WXWIDGETS,  test "$enable_wxwidgets" = "yes")
- AM_CONDITIONAL(GUI_GTK,        test "$enable_gtk" = "yes")
- AM_CONDITIONAL(GUI_QT,         test "$enable_qt" = "yes")
- AM_CONDITIONAL(PLUGIN_ALIAS,   test "$enable_alias" = "yes")
--AM_CONDITIONAL(PLUGIN_ASPELL,  test "$enable_aspell" = "yes")
-+AM_CONDITIONAL(PLUGIN_SPELL,   test "$enable_spell" = "yes")
- AM_CONDITIONAL(PLUGIN_CHARSET, test "$enable_charset" = "yes")
- AM_CONDITIONAL(PLUGIN_DEMO,    test "$enable_demo" = "yes")
- AM_CONDITIONAL(PLUGIN_FIFO,    test "$enable_fifo" = "yes")
-@@ -1057,8 +1062,8 @@ listplugins=""
+@@ -989,7 +994,7 @@ AM_CONDITIONAL(GUI_WXWIDGETS,    test "$enable_wxwidgets" = "yes")
+ AM_CONDITIONAL(GUI_GTK,          test "$enable_gtk" = "yes")
+ AM_CONDITIONAL(GUI_QT,           test "$enable_qt" = "yes")
+ AM_CONDITIONAL(PLUGIN_ALIAS,     test "$enable_alias" = "yes")
+-AM_CONDITIONAL(PLUGIN_ASPELL,    test "$enable_aspell" = "yes")
++AM_CONDITIONAL(PLUGIN_SPELL,     test "$enable_spell" = "yes")
+ AM_CONDITIONAL(PLUGIN_CHARSET,   test "$enable_charset" = "yes")
+ AM_CONDITIONAL(PLUGIN_DEMO,      test "$enable_demo" = "yes")
+ AM_CONDITIONAL(PLUGIN_FIFO,      test "$enable_fifo" = "yes")
+@@ -1069,8 +1074,8 @@ listplugins=""
  if test "x$enable_alias" = "xyes"; then
      listplugins="$listplugins alias"
  fi
@@ -175,15 +221,82 @@ index 3c85871..e37506c 100644
  fi
  if test "x$enable_charset" = "xyes"; then
      listplugins="$listplugins charset"
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index db86c86..bac026d 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -23,6 +23,7 @@ ADD_DEFINITIONS(-DHAVE_CONFIG_H)
+ 
+ INCLUDE(CheckIncludeFiles)
+ INCLUDE(CheckFunctionExists)
++INCLUDE(CheckCCompilerFlag)
+ 
+ CHECK_INCLUDE_FILES("arpa/inet.h" HAVE_ARPA_INET_H)
+ CHECK_INCLUDE_FILES("limits.h" HAVE_LIMITS_H)
+@@ -66,6 +67,13 @@ CHECK_FUNCTION_EXISTS(mallinfo HAVE_MALLINFO)
+ CHECK_INCLUDE_FILES("regex.h" HAVE_REGEX_H)
+ CHECK_FUNCTION_EXISTS(regexec HAVE_REGEXEC)
+ 
++CHECK_C_COMPILER_FLAG(-fPIE HAVE_FPIE_SUPPORT)
++if (HAVE_FPIE_SUPPORT)
++  set (WEECHAT_PIE_CFLAGS "-fPIE")
++  set (WEECHAT_PIE_LDFLAGS "-pie")
++else(HAVE_FPIE_SUPPORT)
++  message(STATUS "Your compiler doesn't support PIE flag")
++endif(HAVE_FPIE_SUPPORT)
+ 
+ #needs to be splitted in subdirectories
+ # FIXME: weechat_gui_common MUST be the first lib in the list
+diff --git a/src/core/CMakeLists.txt b/src/core/CMakeLists.txt
+index 7b4fdfd..8ea0f29 100644
+--- a/src/core/CMakeLists.txt
++++ b/src/core/CMakeLists.txt
+@@ -41,6 +41,8 @@ wee-upgrade-file.c wee-upgrade-file.h
+ wee-utf8.c wee-utf8.h
+ wee-util.c wee-util.h)
+ 
++SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WEECHAT_PIE_CFLAGS}")
++
+ # Check for flock support
+ INCLUDE(CheckSymbolExists)
+ CHECK_INCLUDE_FILES("sys/file.h" HAVE_SYS_FILE_H)
+diff --git a/src/gui/CMakeLists.txt b/src/gui/CMakeLists.txt
+index 1096280..08aeb2d 100644
+--- a/src/gui/CMakeLists.txt
++++ b/src/gui/CMakeLists.txt
+@@ -36,6 +36,11 @@ gui-main.h
+ gui-nicklist.c gui-nicklist.h
+ gui-window.c gui-window.h)
+ 
++SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WEECHAT_PIE_CFLAGS}")
++SET(CMAKE_EXE_LINKER_FLAGS
++    "${CMAKE_EXE_LINKER_FLAGS} ${WEECHAT_PIE_LDFLAGS}")
++
++
+ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+ ADD_LIBRARY(weechat_gui_common STATIC ${LIB_GUI_COMMON_SRC})
+ 
 diff --git a/src/plugins/CMakeLists.txt b/src/plugins/CMakeLists.txt
-index 28ca7fa..17523e3 100644
+index e884731..9cc1849 100644
 --- a/src/plugins/CMakeLists.txt
 +++ b/src/plugins/CMakeLists.txt
-@@ -40,13 +40,19 @@ IF(NOT DISABLE_ALIAS)
-   ADD_SUBDIRECTORY( alias )
- ENDIF(NOT DISABLE_ALIAS)
+@@ -27,6 +27,11 @@ plugin-config.h plugin-config.c)
+ INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+ ADD_LIBRARY(weechat_plugins STATIC ${LIB_PLUGINS_SRC})
  
--IF(NOT DISABLE_ASPELL)
++SET_TARGET_PROPERTIES(weechat_plugins
++  PROPERTIES COMPILE_FLAGS "${WEECHAT_PIE_CFLAGS}")
++
++SET(PLUGIN_INSTALL_DIR lib${LIB_SUFFIX}/${PROJECT_NAME}/plugins)
++
+ INCLUDE(CheckIncludeFiles)
+ INCLUDE(CheckFunctionExists)
+ INCLUDE(CheckLibraryExists)
+@@ -35,13 +40,19 @@ IF(ENABLE_ALIAS)
+   ADD_SUBDIRECTORY( alias )
+ ENDIF(ENABLE_ALIAS)
+ 
+-IF(ENABLE_ASPELL)
 -  # Check for aspell libraries
 -  FIND_PACKAGE(Aspell)
 -  IF(ASPELL_FOUND)
@@ -193,7 +306,7 @@ index 28ca7fa..17523e3 100644
 +  IF(ENCHANT_FOUND)
      ADD_SUBDIRECTORY( aspell )
 -  ENDIF(ASPELL_FOUND)
--ENDIF(NOT DISABLE_ASPELL)
+-ENDIF(ENABLE_ASPELL)
 +  ELSE(ENCHANT_FOUND)
 +    # Check for aspell libraries
 +    FIND_PACKAGE(Aspell)
@@ -203,10 +316,10 @@ index 28ca7fa..17523e3 100644
 +  ENDIF(ENCHANT_FOUND)
 +ENDIF(NOT DISABLE_SPELL)
  
- IF(NOT DISABLE_CHARSET)
+ IF(ENABLE_CHARSET)
    # Check for iconv support.
 diff --git a/src/plugins/Makefile.am b/src/plugins/Makefile.am
-index 0c2c4d6..ed76f83 100644
+index 63e392d..aae2bcc 100644
 --- a/src/plugins/Makefile.am
 +++ b/src/plugins/Makefile.am
 @@ -34,7 +34,7 @@ if PLUGIN_ALIAS
@@ -218,8 +331,18 @@ index 0c2c4d6..ed76f83 100644
  aspell_dir = aspell
  endif
  
+diff --git a/src/plugins/alias/CMakeLists.txt b/src/plugins/alias/CMakeLists.txt
+index 2995719..5694627 100644
+--- a/src/plugins/alias/CMakeLists.txt
++++ b/src/plugins/alias/CMakeLists.txt
+@@ -25,4 +25,4 @@ SET_TARGET_PROPERTIES(alias PROPERTIES PREFIX "")
+ 
+ TARGET_LINK_LIBRARIES(alias)
+ 
+-INSTALL(TARGETS alias LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS alias LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
 diff --git a/src/plugins/aspell/CMakeLists.txt b/src/plugins/aspell/CMakeLists.txt
-index b0a273a..ad120e6 100644
+index c0ab5b0..9636870 100644
 --- a/src/plugins/aspell/CMakeLists.txt
 +++ b/src/plugins/aspell/CMakeLists.txt
 @@ -24,9 +24,15 @@ weechat-aspell-config.c weechat-aspell-config.h
@@ -241,9 +364,10 @@ index b0a273a..ad120e6 100644
 +  ENDIF(ASPELL_FOUND)
 +ENDIF(ENCHANT_FOUND)
  
- INSTALL(TARGETS aspell LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+-INSTALL(TARGETS aspell LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS aspell LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
 diff --git a/src/plugins/aspell/Makefile.am b/src/plugins/aspell/Makefile.am
-index 61da155..48a82fc 100644
+index eae43fe..7aa64b4 100644
 --- a/src/plugins/aspell/Makefile.am
 +++ b/src/plugins/aspell/Makefile.am
 @@ -18,7 +18,7 @@
@@ -263,43 +387,8 @@ index 61da155..48a82fc 100644
 +aspell_la_LIBADD  = $(ASPELL_LFLAGS) $(ENCHANT_LIBS)
  
  EXTRA_DIST = CMakeLists.txt
-diff --git a/src/plugins/aspell/weechat-aspell-config.c b/src/plugins/aspell/weechat-aspell-config.c
-index 927373b..2ef1c39 100644
---- a/src/plugins/aspell/weechat-aspell-config.c
-+++ b/src/plugins/aspell/weechat-aspell-config.c
-@@ -211,7 +211,7 @@ weechat_aspell_config_dict_create_option (void *data,
-     {
-         weechat_printf (NULL,
-                         _("%s%s: error creating aspell dictionary \"%s\" => \"%s\""),
--                        weechat_prefix ("error"), ASPELL_PLUGIN_NAME,
-+                        weechat_prefix ("error"), SPELL_PLUGIN_NAME,
-                         option_name, value);
-     }
-     else
-@@ -256,7 +256,7 @@ weechat_aspell_config_init ()
- {
-     struct t_config_section *ptr_section;
-     
--    weechat_aspell_config_file = weechat_config_new (ASPELL_CONFIG_NAME,
-+    weechat_aspell_config_file = weechat_config_new (SPELL_CONFIG_NAME,
-                                                      NULL, NULL);
-     if (!weechat_aspell_config_file)
-         return 0;
-diff --git a/src/plugins/aspell/weechat-aspell-config.h b/src/plugins/aspell/weechat-aspell-config.h
-index fff053a..33c338d 100644
---- a/src/plugins/aspell/weechat-aspell-config.h
-+++ b/src/plugins/aspell/weechat-aspell-config.h
-@@ -21,7 +21,7 @@
- #ifndef __WEECHAT_ASPELL_CONFIG_H
- #define __WEECHAT_ASPELL_CONFIG_H 1
- 
--#define ASPELL_CONFIG_NAME "aspell"
-+#define SPELL_CONFIG_NAME "spell"
- 
- 
- extern struct t_config_option *weechat_aspell_config_look_color;
 diff --git a/src/plugins/aspell/weechat-aspell-speller.c b/src/plugins/aspell/weechat-aspell-speller.c
-index 42db115..d46c852 100644
+index 51822c4..d5803dc 100644
 --- a/src/plugins/aspell/weechat-aspell-speller.c
 +++ b/src/plugins/aspell/weechat-aspell-speller.c
 @@ -33,6 +33,9 @@
@@ -330,16 +419,7 @@ index 42db115..d46c852 100644
  }
  
  /*
-@@ -93,7 +100,7 @@ weechat_aspell_speller_check_dictionaries (const char *dict_list)
-                     weechat_printf (NULL,
-                                     _("%s: warning: dictionary \"%s\" is not "
-                                       "available on your system"),
--                                    ASPELL_PLUGIN_NAME, argv[i]);
-+                                    SPELL_PLUGIN_NAME, argv[i]);
-                 }
-             }
-             weechat_string_free_split (argv);
-@@ -129,8 +136,12 @@ struct t_aspell_speller *
+@@ -129,9 +136,13 @@ struct t_aspell_speller *
  weechat_aspell_speller_new (const char *lang)
  {
      struct t_aspell_speller *new_speller;
@@ -348,16 +428,13 @@ index 42db115..d46c852 100644
 +#else
      AspellConfig *config;
      AspellCanHaveError *ret;
+     struct t_infolist *infolist;
 +#endif
      
      if (!lang)
          return NULL;
-@@ -139,9 +150,20 @@ weechat_aspell_speller_new (const char *lang)
-     {
-         weechat_printf (NULL,
-                         "%s: creating new speller for lang \"%s\"",
--                        ASPELL_PLUGIN_NAME, lang);
-+                        SPELL_PLUGIN_NAME, lang);
+@@ -143,6 +154,17 @@ weechat_aspell_speller_new (const char *lang)
+                         ASPELL_PLUGIN_NAME, lang);
      }
      
 +#ifdef USE_ENCHANT
@@ -366,7 +443,7 @@ index 42db115..d46c852 100644
 +    {
 +        weechat_printf (NULL,
 +                        "%s%s: error: %s",
-+                        weechat_prefix ("error"), SPELL_PLUGIN_NAME,
++                        weechat_prefix ("error"), ASPELL_PLUGIN_NAME,
 +                        lang);
 +        return NULL;
 +    }
@@ -374,14 +451,7 @@ index 42db115..d46c852 100644
      /* create a speller instance for the newly created cell */
      config = new_aspell_config();
      aspell_config_replace (config, "lang", lang);
-@@ -152,24 +174,29 @@ weechat_aspell_speller_new (const char *lang)
-     {
-         weechat_printf (NULL,
-                         "%s%s: error: %s",
--                        weechat_prefix ("error"), ASPELL_PLUGIN_NAME,
-+                        weechat_prefix ("error"), SPELL_PLUGIN_NAME,
-                         aspell_error_message (ret));
-         delete_aspell_config (config);
+@@ -172,7 +194,8 @@ weechat_aspell_speller_new (const char *lang)
          delete_aspell_can_have_error (ret);
          return NULL;
      }
@@ -391,11 +461,7 @@ index 42db115..d46c852 100644
      /* create and add a new speller cell */
      new_speller = malloc (sizeof (*new_speller));
      if (!new_speller)
-     {
-         weechat_printf (NULL,
-                         _("%s%s: not enough memory to create new speller"),
--                        weechat_prefix ("error"), ASPELL_PLUGIN_NAME);
-+                        weechat_prefix ("error"), SPELL_PLUGIN_NAME);
+@@ -183,7 +206,11 @@ weechat_aspell_speller_new (const char *lang)
          return NULL;
      }
      
@@ -407,7 +473,7 @@ index 42db115..d46c852 100644
      new_speller->lang = strdup (lang);
  
      /* add speller to list */
-@@ -181,8 +208,10 @@ weechat_aspell_speller_new (const char *lang)
+@@ -195,8 +222,10 @@ weechat_aspell_speller_new (const char *lang)
          weechat_aspell_spellers = new_speller;
      last_weechat_aspell_speller = new_speller;
      
@@ -418,14 +484,7 @@ index 42db115..d46c852 100644
      
      return new_speller;
  }
-@@ -201,14 +230,18 @@ weechat_aspell_speller_free (struct t_aspell_speller *speller)
-     {
-         weechat_printf (NULL,
-                         "%s: removing speller for lang \"%s\"",
--                        ASPELL_PLUGIN_NAME, speller->lang);
-+                        SPELL_PLUGIN_NAME, speller->lang);
-     }
-     
+@@ -221,8 +250,12 @@ weechat_aspell_speller_free (struct t_aspell_speller *speller)
      /* free data */
      if (speller->speller)
      {
@@ -439,7 +498,7 @@ index 42db115..d46c852 100644
      if (speller->lang)
          free (speller->lang);
 diff --git a/src/plugins/aspell/weechat-aspell-speller.h b/src/plugins/aspell/weechat-aspell-speller.h
-index a6042a5..44284d3 100644
+index 06156ec..9d503dc 100644
 --- a/src/plugins/aspell/weechat-aspell-speller.h
 +++ b/src/plugins/aspell/weechat-aspell-speller.h
 @@ -23,7 +23,11 @@
@@ -455,19 +514,10 @@ index a6042a5..44284d3 100644
      
      struct t_aspell_speller *prev_speller; /* pointer to next speller       */
 diff --git a/src/plugins/aspell/weechat-aspell.c b/src/plugins/aspell/weechat-aspell.c
-index c99fdba..7228c61 100644
+index cd37a86..2372595 100644
 --- a/src/plugins/aspell/weechat-aspell.c
 +++ b/src/plugins/aspell/weechat-aspell.c
-@@ -35,7 +35,7 @@
- #include "weechat-aspell-speller.h"
- 
- 
--WEECHAT_PLUGIN_NAME(ASPELL_PLUGIN_NAME);
-+WEECHAT_PLUGIN_NAME(SPELL_PLUGIN_NAME);
- WEECHAT_PLUGIN_DESCRIPTION("Aspell plugin for WeeChat");
- WEECHAT_PLUGIN_AUTHOR("Sebastien Helleu <flashcode@flashtux.org>");
- WEECHAT_PLUGIN_VERSION(WEECHAT_VERSION);
-@@ -46,6 +46,10 @@ struct t_weechat_plugin *weechat_aspell_plugin = NULL;
+@@ -48,6 +48,10 @@ struct t_gui_buffer *aspell_buffer_spellers = NULL;
  char *aspell_last_modifier_string = NULL; /* last str. received by modifier */
  char *aspell_last_modifier_result = NULL; /* last str. built by modifier    */
  
@@ -478,20 +528,7 @@ index c99fdba..7228c61 100644
  /* aspell supported langs (updated on of 2008-10-17) */
  struct t_aspell_code langs_avail[] =
  {
-@@ -255,10 +259,10 @@ weechat_aspell_set_dict (struct t_gui_buffer *buffer, const char *value)
-     {
-         if (value && value[0])
-             weechat_printf (NULL, "%s: \"%s\" => %s",
--                            ASPELL_PLUGIN_NAME, name, value);
-+                            SPELL_PLUGIN_NAME, name, value);
-         else
-             weechat_printf (NULL, _("%s: \"%s\" removed"),
--                            ASPELL_PLUGIN_NAME, name);
-+                            SPELL_PLUGIN_NAME, name);
-     }
-     
-     free (name);
-@@ -397,6 +401,55 @@ weechat_aspell_iso_to_country (const char *code)
+@@ -381,6 +385,55 @@ weechat_aspell_iso_to_country (const char *code)
      return strdup ("Unknown");
  }
  
@@ -547,7 +584,7 @@ index c99fdba..7228c61 100644
  /*
   * weechat_aspell_speller_list_dicts: list all aspell dict installed on system
   *                                    and display them
-@@ -405,6 +458,7 @@ weechat_aspell_iso_to_country (const char *code)
+@@ -389,6 +442,7 @@ weechat_aspell_iso_to_country (const char *code)
  void
  weechat_aspell_speller_list_dicts ()
  {
@@ -555,7 +592,7 @@ index c99fdba..7228c61 100644
      char *country, *lang, *pos;
      char buffer[192];
      struct AspellConfig *config;
-@@ -415,13 +469,18 @@ weechat_aspell_speller_list_dicts ()
+@@ -399,13 +453,18 @@ weechat_aspell_speller_list_dicts ()
      config = new_aspell_config();
      list = get_aspell_dict_info_list (config);
      el = aspell_dict_info_list_elements (list);
@@ -565,12 +602,10 @@ index c99fdba..7228c61 100644
 + 
      weechat_printf (NULL, "");
      weechat_printf (NULL,
--                    /* TRANSLATORS: "%s" is "aspell" */
-+                    /* TRANSLATORS: %s is "spell" */
+                     /* TRANSLATORS: "%s" is "aspell" */
                      _( "%s dictionaries list:"),
--                    ASPELL_PLUGIN_NAME);
+                     ASPELL_PLUGIN_NAME);
 -    
-+                    SPELL_PLUGIN_NAME);
 +
 +#ifdef USE_ENCHANT
 +    enchant_broker_list_dicts(broker, EnchantDictDescribe, NULL);
@@ -578,7 +613,7 @@ index c99fdba..7228c61 100644
      while ((dict = aspell_dict_info_enumeration_next (el)))
      {
          country = NULL;
-@@ -474,6 +533,7 @@ weechat_aspell_speller_list_dicts ()
+@@ -458,6 +517,7 @@ weechat_aspell_speller_list_dicts ()
      
      delete_aspell_dict_info_enumeration (el);
      delete_aspell_config (config);
@@ -586,16 +621,7 @@ index c99fdba..7228c61 100644
  }
  
  /*
-@@ -494,7 +554,7 @@ weechat_aspell_add_word (const char *lang, const char *word)
-             weechat_printf (NULL,
-                             _("%s: error: dictionary \"%s\" is not "
-                               "available on your system"),
--                            ASPELL_PLUGIN_NAME, lang);
-+                            SPELL_PLUGIN_NAME, lang);
-             return;
-         }
-         new_speller = weechat_aspell_speller_new (lang);
-@@ -503,21 +563,25 @@ weechat_aspell_add_word (const char *lang, const char *word)
+@@ -487,6 +547,9 @@ weechat_aspell_add_word (const char *lang, const char *word)
          ptr_speller = new_speller;
      }
  
@@ -605,25 +631,15 @@ index c99fdba..7228c61 100644
      if (aspell_speller_add_to_personal (ptr_speller->speller,
                                          word,
                                          strlen (word)) == 1)
-     {
-         weechat_printf (NULL,
-                         _("%s: word \"%s\" added to personal dictionary"),
--                        ASPELL_PLUGIN_NAME, word);
-+                        SPELL_PLUGIN_NAME, word);
-     }
-     else
-     {
-         weechat_printf (NULL,
-                         _("%s%s: failed to add word to personal "
+@@ -502,6 +565,7 @@ weechat_aspell_add_word (const char *lang, const char *word)
                            "dictionary"),
--                        weechat_prefix ("error"), ASPELL_PLUGIN_NAME);
-+                        weechat_prefix ("error"), SPELL_PLUGIN_NAME);
+                         weechat_prefix ("error"), ASPELL_PLUGIN_NAME);
      }
 +#endif
      
      if (new_speller)
          weechat_aspell_speller_free (new_speller);
-@@ -648,7 +712,11 @@ weechat_aspell_check_word (struct t_gui_buffer *buffer, const char *word)
+@@ -632,7 +696,11 @@ weechat_aspell_check_word (struct t_gui_buffer *buffer, const char *word)
                      for (ptr_speller = weechat_aspell_spellers; ptr_speller;
                           ptr_speller = ptr_speller->next_speller)
                      {
@@ -635,25 +651,7 @@ index c99fdba..7228c61 100644
                          {
                              rc = 1;
                              break;
-@@ -877,7 +945,7 @@ weechat_aspell_command_cb (void *data, struct t_gui_buffer *buffer,
-                                     _("%s%s: no dictionary on this buffer for "
-                                       "adding word"),
-                                     weechat_prefix ("error"),
--                                    ASPELL_PLUGIN_NAME);
-+                                    SPELL_PLUGIN_NAME);
-                 }
-                 else if (weechat_aspell_spellers->next_speller)
-                 {
-@@ -885,7 +953,7 @@ weechat_aspell_command_cb (void *data, struct t_gui_buffer *buffer,
-                                     _("%s%s: many dictionaries are defined for "
-                                       "this buffer, please specify dictionary"),
-                                     weechat_prefix ("error"),
--                                    ASPELL_PLUGIN_NAME);
-+                                    SPELL_PLUGIN_NAME);
-                 }
-                 else
-                     weechat_aspell_add_word (weechat_aspell_spellers->lang,
-@@ -952,6 +1020,13 @@ weechat_plugin_init (struct t_weechat_plugin *plugin, int argc, char *argv[])
+@@ -948,6 +1016,13 @@ weechat_plugin_init (struct t_weechat_plugin *plugin, int argc, char *argv[])
      (void) argv;
      
      weechat_plugin = plugin;
@@ -667,53 +665,16 @@ index c99fdba..7228c61 100644
      
      if (!weechat_aspell_config_init ())
          return WEECHAT_RC_ERROR;
-@@ -959,26 +1034,26 @@ weechat_plugin_init (struct t_weechat_plugin *plugin, int argc, char *argv[])
-     if (weechat_aspell_config_read () < 0)
-         return WEECHAT_RC_ERROR;
-     
--    /* command /aspell */
--    weechat_hook_command ("aspell",
--                          N_("aspell plugin configuration"),
-+    /* command /spell */
-+    weechat_hook_command ("spell",
-+                          N_("spell plugin configuration"),
-                           N_("dictlist | enable lang | disable | "
-                              "addword [lang] word"),
-                           N_("dictlist: show installed dictionaries\n"
--                             "  enable: enable aspell on current buffer\n"
--                             " disable: disable aspell on current buffer\n"
--                             " addword: add a word in your personal aspell "
-+                             "  enable: enable spell on current buffer\n"
-+                             " disable: disable spell on current buffer\n"
-+                             " addword: add a word in your personal spell "
-                              "dictionary\n"
-                              "\n"
-                              "Input line beginning with a '/' is not checked, "
-                              "except for some commands."),
-                           "dictlist"
--                          " || enable %(aspell_langs)"
-+                          " || enable %(spell_langs)"
-                           " || disable"
-                           " || addword",
-                           &weechat_aspell_command_cb, NULL);
--    weechat_hook_completion ("aspell_langs",
--                             N_("list of supported langs for aspell"),
-+    weechat_hook_completion ("spell_langs",
-+                             N_("list of supported langs for spell"),
-                              &weechat_aspell_completion_langs_cb, NULL);
-     
-     /* callback for buffer_switch */
-@@ -988,7 +1063,8 @@ weechat_plugin_init (struct t_weechat_plugin *plugin, int argc, char *argv[])
-     /* callback for spell checking input text */
-     weechat_hook_modifier ("input_text_display",
+@@ -986,7 +1061,7 @@ weechat_plugin_init (struct t_weechat_plugin *plugin, int argc, char *argv[])
+      */
+     weechat_hook_modifier ("500|input_text_display",
                             &weechat_aspell_modifier_cb, NULL);
 -    
-+
 +   
-     weechat_aspell_create_spellers (weechat_current_buffer ());
-     
      return WEECHAT_RC_OK;
-@@ -1014,6 +1090,11 @@ weechat_plugin_end (struct t_weechat_plugin *plugin)
+ }
+ 
+@@ -1010,6 +1085,11 @@ weechat_plugin_end (struct t_weechat_plugin *plugin)
          free (aspell_last_modifier_result);
      
      weechat_aspell_config_free ();
@@ -726,10 +687,10 @@ index c99fdba..7228c61 100644
      return WEECHAT_RC_OK;
  }
 diff --git a/src/plugins/aspell/weechat-aspell.h b/src/plugins/aspell/weechat-aspell.h
-index d159287..4b3a5ef 100644
+index 88f6368..743b818 100644
 --- a/src/plugins/aspell/weechat-aspell.h
 +++ b/src/plugins/aspell/weechat-aspell.h
-@@ -21,10 +21,14 @@
+@@ -21,7 +21,11 @@
  #ifndef __WEECHAT_ASPELL_H
  #define __WEECHAT_ASPELL_H 1
  
@@ -741,8 +702,124 @@ index d159287..4b3a5ef 100644
 +#endif
  
  #define weechat_plugin weechat_aspell_plugin
--#define ASPELL_PLUGIN_NAME "aspell"
-+#define SPELL_PLUGIN_NAME "spell"
+ #define ASPELL_PLUGIN_NAME "aspell"
+diff --git a/src/plugins/charset/CMakeLists.txt b/src/plugins/charset/CMakeLists.txt
+index a49ab8b..6c915bc 100644
+--- a/src/plugins/charset/CMakeLists.txt
++++ b/src/plugins/charset/CMakeLists.txt
+@@ -29,4 +29,4 @@ IF(ICONV_FOUND)
+   ENDIF(ICONV_LIBRARY)
+ ENDIF(ICONV_FOUND)
  
- struct t_aspell_code
- {
+-INSTALL(TARGETS charset LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS charset LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/demo/CMakeLists.txt b/src/plugins/demo/CMakeLists.txt
+index 077578b..afeacd4 100644
+--- a/src/plugins/demo/CMakeLists.txt
++++ b/src/plugins/demo/CMakeLists.txt
+@@ -22,4 +22,4 @@ SET_TARGET_PROPERTIES(demo PROPERTIES PREFIX "")
+ 
+ TARGET_LINK_LIBRARIES(demo)
+ 
+-INSTALL(TARGETS demo LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS demo LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/fifo/CMakeLists.txt b/src/plugins/fifo/CMakeLists.txt
+index 0ffd45d..40c054e 100644
+--- a/src/plugins/fifo/CMakeLists.txt
++++ b/src/plugins/fifo/CMakeLists.txt
+@@ -24,4 +24,4 @@ SET_TARGET_PROPERTIES(fifo PROPERTIES PREFIX "")
+ 
+ TARGET_LINK_LIBRARIES(fifo)
+ 
+-INSTALL(TARGETS fifo LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS fifo LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/irc/CMakeLists.txt b/src/plugins/irc/CMakeLists.txt
+index 0754509..bed1295 100644
+--- a/src/plugins/irc/CMakeLists.txt
++++ b/src/plugins/irc/CMakeLists.txt
+@@ -58,4 +58,4 @@ ENDIF(GCRYPT_FOUND)
+ 
+ TARGET_LINK_LIBRARIES(irc ${LINK_LIBS})
+ 
+-INSTALL(TARGETS irc LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS irc LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/logger/CMakeLists.txt b/src/plugins/logger/CMakeLists.txt
+index 7073f9d..3fe9d11 100644
+--- a/src/plugins/logger/CMakeLists.txt
++++ b/src/plugins/logger/CMakeLists.txt
+@@ -27,4 +27,4 @@ SET_TARGET_PROPERTIES(logger PROPERTIES PREFIX "")
+ 
+ TARGET_LINK_LIBRARIES(logger)
+ 
+-INSTALL(TARGETS logger LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS logger LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/relay/CMakeLists.txt b/src/plugins/relay/CMakeLists.txt
+index 44c1fef..d95dd4a 100644
+--- a/src/plugins/relay/CMakeLists.txt
++++ b/src/plugins/relay/CMakeLists.txt
+@@ -34,4 +34,4 @@ SET_TARGET_PROPERTIES(relay PROPERTIES PREFIX "")
+ 
+ TARGET_LINK_LIBRARIES(relay)
+ 
+-INSTALL(TARGETS relay LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS relay LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/scripts/lua/CMakeLists.txt b/src/plugins/scripts/lua/CMakeLists.txt
+index 4f9ecfa..40c8fd3 100644
+--- a/src/plugins/scripts/lua/CMakeLists.txt
++++ b/src/plugins/scripts/lua/CMakeLists.txt
+@@ -32,4 +32,4 @@ IF(LUA_FOUND)
+   ENDIF(LUA_LIBRARY AND LUALIB_LIBRARY)
+ ENDIF(LUA_FOUND)
+ 
+-INSTALL(TARGETS lua LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS lua LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/scripts/perl/CMakeLists.txt b/src/plugins/scripts/perl/CMakeLists.txt
+index a6fc4f3..5a3db0c 100644
+--- a/src/plugins/scripts/perl/CMakeLists.txt
++++ b/src/plugins/scripts/perl/CMakeLists.txt
+@@ -38,4 +38,4 @@ IF(PERL_FOUND)
+   ENDIF(PERL_DYNALOADER)
+ ENDIF(PERL_FOUND)
+ 
+-INSTALL(TARGETS perl LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS perl LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/scripts/python/CMakeLists.txt b/src/plugins/scripts/python/CMakeLists.txt
+index a236a01..84d36c7 100644
+--- a/src/plugins/scripts/python/CMakeLists.txt
++++ b/src/plugins/scripts/python/CMakeLists.txt
+@@ -28,4 +28,4 @@ IF(PYTHON_FOUND)
+   TARGET_LINK_LIBRARIES(python ${PYTHON_LIBRARY} weechat_scripts)
+ ENDIF(PYTHON_FOUND)
+ 
+-INSTALL(TARGETS python LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS python LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/scripts/ruby/CMakeLists.txt b/src/plugins/scripts/ruby/CMakeLists.txt
+index 72977ef..925684c 100644
+--- a/src/plugins/scripts/ruby/CMakeLists.txt
++++ b/src/plugins/scripts/ruby/CMakeLists.txt
+@@ -27,4 +27,4 @@ IF(RUBY_FOUND)
+   TARGET_LINK_LIBRARIES(ruby ${RUBY_LIBRARY} weechat_scripts)
+ ENDIF(RUBY_FOUND)
+ 
+-INSTALL(TARGETS ruby LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS ruby LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/scripts/tcl/CMakeLists.txt b/src/plugins/scripts/tcl/CMakeLists.txt
+index 68d05e4..540c480 100644
+--- a/src/plugins/scripts/tcl/CMakeLists.txt
++++ b/src/plugins/scripts/tcl/CMakeLists.txt
+@@ -34,4 +34,4 @@ IF(TCL_FOUND)
+ 
+ ENDIF(TCL_FOUND)
+ 
+-INSTALL(TARGETS tcl LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS tcl LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
+diff --git a/src/plugins/xfer/CMakeLists.txt b/src/plugins/xfer/CMakeLists.txt
+index 1e629a9..75a0006 100644
+--- a/src/plugins/xfer/CMakeLists.txt
++++ b/src/plugins/xfer/CMakeLists.txt
+@@ -33,4 +33,4 @@ SET_TARGET_PROPERTIES(xfer PROPERTIES PREFIX "")
+ 
+ TARGET_LINK_LIBRARIES(xfer)
+ 
+-INSTALL(TARGETS xfer LIBRARY DESTINATION ${LIBDIR}/plugins)
++INSTALL(TARGETS xfer LIBRARY DESTINATION ${PLUGIN_INSTALL_DIR})
