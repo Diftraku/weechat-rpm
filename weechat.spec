@@ -1,60 +1,142 @@
 Name:      weechat
 Summary:   Portable, fast, light and extensible IRC client
-Version:   0.2.6.2
-Release:   1%{?dist}
-Source:    http://weechat.flashtux.org/download/%{name}-%{version}.tar.bz2
-Patch0:    %{name}-%{version}-pie-rollup.patch.bz2
-URL:       http://weechat.flashtux.org
+Version:   0.3.9.2
+Release:   2%{?dist}
+Source:    http://weechat.org/files/src/%{name}-%{version}.tar.bz2
+Patch0:    weechat-combined.patch
+URL:       http://weechat.org
 Group:     Applications/Communications
-BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 License:   GPLv3
-BuildRequires: ncurses-devel python-devel perl ruby-devel 
-BuildRequires: gnutls-devel lua-devel aspell-devel
+BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+BuildRequires: ncurses-devel python-devel perl-devel ruby-devel 
+BuildRequires: gnutls-devel lua-devel enchant-devel
 BuildRequires: docbook-style-xsl gettext ruby
+BuildRequires: cmake perl-ExtUtils-Embed tcl-devel
+BuildRequires: libcurl-devel zlib-devel pkgconfig
 
 %description
 WeeChat (Wee Enhanced Environment for Chat) is a portable, fast, light and
 extensible IRC client. Everything can be done with a keyboard.
 It is customizable and extensible with scripts.
 
+%package devel
+Summary: Development files for weechat
+Group: Development/Libraries
+Requires: %{name} = %{version}-%{release} pkgconfig
+
+%description devel
+WeeChat (Wee Enhanced Environment for Chat) is a portable, fast, light and
+extensible IRC client. Everything can be done with a keyboard.
+It is customizable and extensible with scripts.
+
+This package contains include files and pc file for weechat.
+
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}
 %patch0 -p1
 
 %build
-%configure \
-  --disable-rpath \
-  --enable-static=no \
-  --with-doc-xsl-prefix=/usr/share/sgml/docbook/xsl-stylesheets
-
-make RPM_OPT_FLAGS="$RPM_OPT_FLAGS" %{?_smp_mflags}
+%cmake .
+make VERBOSE=1 %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make install DESTDIR="$RPM_BUILD_ROOT"
-
-find $RPM_BUILD_ROOT -type f -name "*.la" -exec rm -f {} ';'
-
-# This hardcoded docdir=... in Makefile.am is crap
-
-mv $RPM_BUILD_ROOT%{_docdir}/%{name}/html .
-mv $RPM_BUILD_ROOT%{_docdir}/%{name}/weechat_quickstart* .
-
 %find_lang %name
+
+%check
+ctest
 
 %clean
 rm -rf $RPM_BUILD_ROOT 
 
 %files -f %{name}.lang
 %defattr(-,root,root,0755) 
-%doc AUTHORS BUGS ChangeLog COPYING FAQ FAQ.fr NEWS README TODO html weechat_quickstart*
+%doc AUTHORS ChangeLog COPYING NEWS README
+%doc doc/en/weechat_faq.en.txt doc/en/weechat_quickstart.en.txt doc/en/weechat_scripting.en.txt
+%doc doc/en/weechat_user.en.txt
 %{_mandir}/man1/%{name}-curses.1*
 %{_bindir}/%{name}-curses
 %dir %{_libdir}/%{name}
 %dir %{_libdir}/%{name}/plugins
 %{_libdir}/%{name}/plugins/*
 
+%files devel
+%dir %{_includedir}/%{name}
+%{_includedir}/%{name}/weechat-plugin.h
+%{_libdir}/pkgconfig/*.pc
+
 %changelog
+* Sun Dec 02 2012 Paul Komkoff <i@stingr.net> - 0.3.9.2-2
+- add zlib-devel dependency for epel6/ppc build
+
+* Sat Dec  1 2012 Paul P. Komkoff Jr <i@stingr.net> - 0.3.9.2-1
+- new upstream, long overdue
+
+* Mon Nov 19 2012 Paul P. Komkoff Jr <i@stingr.net> - 0.3.8-4
+- fix bz#878025
+
+* Fri Nov 09 2012 Paul P. Komkoff Jr <i@stingr.net> - 0.3.8-3
+- fix bz#875181
+
+* Sun Jul 22 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.8-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
+
+* Tue Jun 26 2012 Russell Golden <niveusluna@niveusluna.org> - 0.3.8-1
+- New upstream version
+
+* Fri Mar 16 2012 Paul P. Komkoff Jr <i@stingr.net> - 0.3.7-1
+- new upstream version
+
+* Wed Feb 08 2012 Bohuslav Kabrda <bkabrda@redhat.com> - 0.3.6-2
+- Rebuilt for Ruby 1.9.3.
+
+* Wed Jan 18 2012 Paul P. Komkoff Jr <i@stingr.net> - 0.3.6-1
+- new upstream version
+
+* Sat Jan 14 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.5-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_17_Mass_Rebuild
+
+* Thu Nov 10 2011 Paul P. Komkoff Jr <i@stingr.net> - 0.3.5-2
+- rebuilt
+
+* Thu Jun  2 2011 Paul P. Komkoff Jr <i@stingr.net> - 0.3.5-1
+- new upstream version
+
+* Mon Feb 07 2011 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.3.3-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_15_Mass_Rebuild
+
+* Sat Aug 28 2010 Paul P. Komkoff Jr <i@stingr.net> - 0.3.3-2
+- fixed cmake config to accept python27
+
+* Wed Aug 25 2010 Paul P. Komkoff Jr <i@stingr.net> - 0.3.3-1
+- new upstream version
+
+* Tue Jul 27 2010 David Malcolm <dmalcolm@redhat.com> - 0.3.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Features/Python_2.7/MassRebuild
+
+* Fri May  7 2010 Paul P. Komkoff Jr <i@stingr.net> - 0.3.2-2
+- spec file fix
+
+* Thu May  6 2010 Paul P. Komkoff Jr <i@stingr.net> - 0.3.2-1
+- new upstream version
+
+* Mon Dec  7 2009 Stepan Kasal <skasal@redhat.com> - 0.3.0-3
+- rebuild against perl 5.10.1
+
+* Sat Nov 28 2009 Paul P. Komkoff Jr <i@stingr.net> - 0.3.0-2
+- use enchant as spelling provider (instead of aspell), patch by Caolan McNamara
+
+* Thu Sep 10 2009 Paul P. Komkoff Jr <i@stingr.net> - 0.3.0-1
+- new, shiny version
+- new cmake-based build
+
+* Mon Jul 27 2009 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.2.6.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_12_Mass_Rebuild
+
+* Thu Jun 25 2009 Paul P. Komkoff Jr <i@stingr.net> - 0.2.6.3-1
+- gnutls detection bugfix
+
 * Fri May  1 2009 Paul P. Komkoff Jr <i@stingr.net> - 0.2.6.2-1
 - fix some charset decoding problems.
 
