@@ -8,11 +8,17 @@ URL:       http://weechat.org
 Group:     Applications/Communications
 License:   GPLv3
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-BuildRequires: ncurses-devel python-devel perl-devel ruby-devel 
-BuildRequires: gnutls-devel lua-devel enchant-devel
+BuildRequires: ncurses-devel ruby-devel 
+BuildRequires: lua-devel enchant-devel
 BuildRequires: docbook-style-xsl gettext ruby
-BuildRequires: cmake perl-ExtUtils-Embed tcl-devel
-BuildRequires: libcurl-devel zlib-devel pkgconfig
+BuildRequires: cmake libgcrypt-devel
+BuildRequires: zlib-devel pkgconfig
+%if 0%{?fedora} > 6
+BuildRequires: perl-devel perl-ExtUtils-Embed libcurl-devel gnutls-devel
+BuildRequires: tcl-devel python-devel
+%else
+BuildRequires: perl curl-devel python26-devel
+%endif
 
 %description
 WeeChat (Wee Enhanced Environment for Chat) is a portable, fast, light and
@@ -69,6 +75,8 @@ rm -rf $RPM_BUILD_ROOT
 %changelog
 * Sun Dec 02 2012 Paul Komkoff <i@stingr.net> - 0.3.9.2-2
 - add zlib-devel dependency for epel6/ppc build
+- for epel5: disable ssl (gnutls too old), tcl plugin (tcl too old)
+- for epel5: use python26 for python plugin.
 
 * Sat Dec  1 2012 Paul P. Komkoff Jr <i@stingr.net> - 0.3.9.2-1
 - new upstream, long overdue
