@@ -1,15 +1,16 @@
 Name:      weechat
 Summary:   Portable, fast, light and extensible IRC client
 Version:   0.4.0
-Release:   1%{?dist}
+Release:   2%{?dist}
 Source:    http://weechat.org/files/src/%{name}-%{version}.tar.bz2
 Patch0:    weechat-0.4.0-pie.patch
+Patch1:    weechat-0.4.0-enchant.patch
 URL:       http://weechat.org
 Group:     Applications/Communications
 License:   GPLv3
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-BuildRequires: ncurses-devel ruby-devel 
-BuildRequires: lua-devel aspell-devel
+BuildRequires: ncurses-devel ruby-devel
+BuildRequires: lua-devel enchant-devel
 BuildRequires: docbook-style-xsl gettext ruby
 BuildRequires: cmake libgcrypt-devel
 BuildRequires: zlib-devel pkgconfig
@@ -40,6 +41,7 @@ This package contains include files and pc file for weechat.
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p1
+%patch1 -p1
 
 %build
 mkdir build
@@ -62,10 +64,10 @@ popd
 ctest
 
 %clean
-rm -rf $RPM_BUILD_ROOT 
+rm -rf $RPM_BUILD_ROOT
 
 %files -f %{name}.lang
-%defattr(-,root,root,0755) 
+%defattr(-,root,root,0755)
 %doc AUTHORS ChangeLog COPYING NEWS README
 %doc doc/en/weechat_faq.en.txt doc/en/weechat_quickstart.en.txt doc/en/weechat_scripting.en.txt
 %doc doc/en/weechat_user.en.txt
@@ -81,6 +83,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Tue Jan 22 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-2
+- reimplement enchant support as a separate patch
+- implement additional enchant support for displaying spelling suggestions
+  in weechat_aspell_get_suggestions(), which is a new function introduced by
+  upstream in 0.4.0
+
 * Mon Jan 21 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-1
 - update to upstream release 0.4.0
 - add CMAKE options (DPREFIX and DLIBDIR) which negate the need to patch
