@@ -1,14 +1,17 @@
+%global _hardened_build 1
+
 Name:      weechat
 Summary:   Portable, fast, light and extensible IRC client
 Version:   0.4.0
-Release:   2%{?dist}
+Release:   6%{?dist}
 Source:    http://weechat.org/files/src/%{name}-%{version}.tar.bz2
-Patch0:    weechat-0.4.0-pie.patch
-Patch1:    weechat-0.4.0-enchant.patch
+Patch0:    weechat-0.4.0-enchant.patch
+Patch1:    weechat-0.4.0-ruby-version.patch
+Patch2:    weechat-0.4.0-ruby-2.0-crash.patch
 URL:       http://weechat.org
 Group:     Applications/Communications
 License:   GPLv3
-BuildRequires: ncurses-devel python-devel perl-devel ruby-devel 
+BuildRequires: ncurses-devel python-devel perl-devel ruby-devel
 BuildRequires: gnutls-devel lua-devel enchant-devel
 BuildRequires: docbook-style-xsl gettext ruby
 BuildRequires: cmake perl-ExtUtils-Embed tcl-devel
@@ -34,7 +37,10 @@ This package contains include files and pc file for weechat.
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p1
+%if 0%{?fedora} >= 19
 %patch1 -p1
+%patch2 -p1
+%endif
 
 %build
 mkdir build
@@ -57,10 +63,10 @@ popd
 ctest
 
 %clean
-rm -rf $RPM_BUILD_ROOT 
+rm -rf $RPM_BUILD_ROOT
 
 %files -f %{name}.lang
-%defattr(-,root,root,0755) 
+%defattr(-,root,root,0755)
 %doc AUTHORS ChangeLog COPYING NEWS README
 %doc doc/en/weechat_faq.en.txt doc/en/weechat_quickstart.en.txt doc/en/weechat_scripting.en.txt
 %doc doc/en/weechat_user.en.txt
@@ -76,6 +82,21 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Sat Mar 30 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-6
+- enable _hardened_build as weechat matches the "long running" criteria
+- remove redundant PIE patch
+
+* Fri Mar 29 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-5
+- fix crash with Ruby 2.0
+
+* Wed Mar 13 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-4
+- rebuild with Ruby 2.0.0
+- add patch to properly obtain the version of ruby
+- fix bogus dates in older changelog entries
+
+* Fri Feb 15 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.4.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Tue Jan 22 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-2
 - reimplement enchant support as a separate patch
 - implement additional enchant support for displaying spelling suggestions
@@ -216,7 +237,7 @@ rm -rf $RPM_BUILD_ROOT
 - Released version 0.1.3
 * Sat May 21 2005 FlashCode <flashcode@flashtux.org> 0.1.2-1
 - Released version 0.1.2
-* Sat Mar 20 2005 FlashCode <flashcode@flashtux.org> 0.1.1-1
+* Sun Mar 20 2005 FlashCode <flashcode@flashtux.org> 0.1.1-1
 - Released version 0.1.1
 * Sat Feb 12 2005 FlashCode <flashcode@flashtux.org> 0.1.0-1
 - Released version 0.1.0
@@ -224,11 +245,11 @@ rm -rf $RPM_BUILD_ROOT
 - Released version 0.0.9
 * Sat Oct 30 2004 FlashCode <flashcode@flashtux.org> 0.0.8-1
 - Released version 0.0.8
-* Sat Aug 08 2004 FlashCode <flashcode@flashtux.org> 0.0.7-1
+* Sun Aug 08 2004 FlashCode <flashcode@flashtux.org> 0.0.7-1
 - Released version 0.0.7
 * Sat Jun 05 2004 FlashCode <flashcode@flashtux.org> 0.0.6-1
 - Released version 0.0.6
-* Thu Feb 02 2004 FlashCode <flashcode@flashtux.org> 0.0.5-1
+* Mon Feb 02 2004 FlashCode <flashcode@flashtux.org> 0.0.5-1
 - Released version 0.0.5
 * Thu Jan 01 2004 FlashCode <flashcode@flashtux.org> 0.0.4-1
 - Released version 0.0.4
