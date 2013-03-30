@@ -1,10 +1,11 @@
+%global _hardened_build 1
+
 Name:      weechat
 Summary:   Portable, fast, light and extensible IRC client
 Version:   0.4.0
-Release:   2%{?dist}
+Release:   3%{?dist}
 Source:    http://weechat.org/files/src/%{name}-%{version}.tar.bz2
-Patch0:    weechat-0.4.0-pie.patch
-Patch1:    weechat-0.4.0-enchant.patch
+Patch0:    weechat-0.4.0-enchant.patch
 URL:       http://weechat.org
 Group:     Applications/Communications
 License:   GPLv3
@@ -41,7 +42,6 @@ This package contains include files and pc file for weechat.
 %prep
 %setup -q -n %{name}-%{version}
 %patch0 -p1
-%patch1 -p1
 
 %build
 mkdir build
@@ -83,6 +83,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/*.pc
 
 %changelog
+* Sat Mar 30 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-3
+- enable _hardened_build as weechat matches the "long running" criteria
+- remove redundant PIE patch
+
 * Tue Jan 22 2013 Jamie Nguyen <jamielinux@fedoraproject.org> - 0.4.0-2
 - reimplement enchant support as a separate patch
 - implement additional enchant support for displaying spelling suggestions
